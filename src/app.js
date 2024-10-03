@@ -1,22 +1,17 @@
 const express = require('express');
 
 const app = express();
+const {adminAuth} = require('./middleWare/auth')
 
-app.get("/users", (req, res, next) => {
-    //res.send("Response");
-    next();
-}, (req, res, next) => {
-    //res.send("2nd Response")
-    console.log("2nd Response")
-    next();
-}, (req, res, next) => {
-    console.group("3rd Response")
-    next();
-}, (req, res, next) => {
-    console.log("4th Response")
-    res.send("4th Response")
+
+
+app.get("/admin/getAllData", adminAuth, (req, res) => {
+    res.send("All Data Sent")
 })
 
+app.delete("/admin/deleteAllData", adminAuth, (req, res) => {
+    res.send("Data Deleted")
+})
 
 app.listen(3000, () => {
     console.log('Server Started Successfully');
