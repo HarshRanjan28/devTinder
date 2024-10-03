@@ -2,21 +2,19 @@ const express = require('express');
 
 const app = express();
 
-
-app.use("/users", (req, res) => {
-    res.send("This route will match with all HTTP methods")
-})
-
-app.get("/users", (req, res) => {
-    res.send({firstName: "Harsh", lastName: "Ranjan"});
-})
-
-app.post("/users", (req, res) => {
-    res.send("Data Successfully saved to Database");
-})
-
-app.delete("/users", (req, res) => {
-    res.send("Data Deleted Successfully");
+app.get("/users", (req, res, next) => {
+    //res.send("Response");
+    next();
+}, (req, res, next) => {
+    //res.send("2nd Response")
+    console.log("2nd Response")
+    next();
+}, (req, res, next) => {
+    console.group("3rd Response")
+    next();
+}, (req, res, next) => {
+    console.log("4th Response")
+    res.send("4th Response")
 })
 
 
