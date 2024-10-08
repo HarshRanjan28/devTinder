@@ -2,12 +2,15 @@ const express = require("express");
 const connectDB = require("./config/database");
 const {validateSignUpData} = require("./utils/validation");
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
 
 const app = express();
 
 const User = require("./models/user");
 
 app.use(express.json());
+app.use(cookieParser())
 
 //creating the user
 
@@ -19,7 +22,7 @@ app.post("/signup", async (req, res) => {
         const {firstName, lastName, emailId, password} = req.body;
 
         //Encrypt Password
-        const passwordHash = bcrypt.hash(password, 10);
+        const passwordHash = await bcrypt.hash(password, 10);
         console.log(passwordHash);
 
         //creating a new instance of the user model
@@ -48,11 +51,40 @@ app.post("/login", async (req, res) => {
         }
         const isPasswordValid = bcrypt.compare(password, user.password);
         if (isPasswordValid) {
+
+            //create a JWT Token
+            const token = await jwt.sign({_id: user._id}, "DEV@Tinder$2815");
+
+            // add the token to cookie and send the response back to user
+            res.cookie("token", token);
+
             res.status(200).send("Login Successfull!!")
         }
         else {
             throw new Error("Invalid credentials");
         }
+    } catch (err) {
+        res.status(400).send("ERROR : " + err.message);
+    }
+})
+
+//getting the user profile
+
+app.get("/profile", async (req, res) => {
+    try {
+        const cookies = req.cookies;
+        const {token} = cookies;
+        if (!token) {
+            throw new Error("Invalid Token");
+        }
+
+        const decodedMessage = await jwt.verify(token, "DEV@Tinder$2815");
+        const {_id} = decodedMessage;
+        const user = await User.findById(_id);
+        if (!user) {
+            throw new Error("No user found");
+        }
+        res.status(200).send(user);
     } catch (err) {
         res.status(400).send("ERROR : " + err.message);
     }
@@ -101,7 +133,6 @@ app.delete("/deleteuser", async (req, res) => {
 
 app.patch("/updateuser", async (req, res) => {
     const userId = req.body.userId;
-    console.log(userId);
     const updatedData = req.body;
     try {
         await User.findOneAndUpdate({_id: userId}, updatedData);
