@@ -50,10 +50,9 @@ app.post("/login", async (req, res) => {
         if (!user) {
             throw new Error("Invalid credentials");
         }
-        const isPasswordValid = bcrypt.compare(password, user.password);
+        const isPasswordValid = user.validatePassword(password);
         if (isPasswordValid) {
-            //create a JWT Token
-            const token = await jwt.sign({_id: user._id}, "DEV@Tinder$2815", {expiresIn: '1h'});
+            const token = await user.getJWT();
 
             // add the token to cookie and send the response back to user
             res.cookie("token", token);
@@ -108,20 +107,19 @@ app.get("/feed", async (req, res) => {
 
 //sending the connection request
 
-app.
 
-    //updating the user based on given ID
+//updating the user based on given ID
 
-    app.patch("/updateuser", async (req, res) => {
-        const userId = req.body.userId;
-        const updatedData = req.body;
-        try {
-            await User.findOneAndUpdate({_id: userId}, updatedData);
-            res.send("User updated successfully");
-        } catch (err) {
-            res.status(400).send("Something went wrong");
-        }
-    });
+app.patch("/updateuser", async (req, res) => {
+    const userId = req.body.userId;
+    const updatedData = req.body;
+    try {
+        await User.findOneAndUpdate({_id: userId}, updatedData);
+        res.send("User updated successfully");
+    } catch (err) {
+        res.status(400).send("Something went wrong");
+    }
+});
 
 connectDB()
     .then(() => {
