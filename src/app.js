@@ -1,23 +1,15 @@
 const express = require("express");
 
 const app = express();
+const connectDB = require("./config/databases");
 
-app.use("/hello", (req, res) => {
-    res.send("Hello from the hello route");
-});
-
-app.use("/hello/2", (req, res) => {
-    res.send("This is the 2nd hello route");
-})
-
-app.use("/test", (req, res) => {
-    res.send("Hello from the test route");
-});
-
-app.use("/", (req, res) => {
-    res.send("Hello from the Home route");
-});
-
-app.listen(3000, () => {
-    console.log("Server is running successfully on port 3000");
-});
+connectDB()
+    .then(() => {
+        console.log("Database connected Successfully");
+        app.listen(3000, () => {
+            console.log("Server is running successfully on port 3000");
+        });
+    })
+    .catch((err) => {
+        console.log("Error connecting to Database!!" + err);
+    });
