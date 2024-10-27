@@ -22,6 +22,22 @@ const userSchema = new Schema(
             type: String,
             required: true,
         },
+        skills: {
+            type: Array,
+            required: true
+        },
+        about: {
+            type: String,
+            required: true
+        },
+        gender: {
+            type: String,
+            required: true
+        },
+        age: {
+            type: Number,
+            required: true
+        }
     },
     {timestamps: true}
 );

@@ -1,8 +1,7 @@
 const express = require('express');
-const validateSignUpData = require('../utils/validator');
+const {validateSignUpData} = require('../utils/validator');
 const User = require('../models/user');
 const bcrypt = require('bcrypt');
-const {userAuth} = require('../middlewares/auth');
 
 const router = express.Router();
 
@@ -20,7 +19,7 @@ router.post("/signup", async (req, res) => {
 
 })
 
-router.post("/login", userAuth, async (req, res) => {
+router.post("/login", async (req, res) => {
     try {
         const {emailId, password} = req.body;
         const user = await User.findOne({emailId: emailId});
@@ -31,7 +30,7 @@ router.post("/login", userAuth, async (req, res) => {
         const isPasswordValid = user.validatePassword(password);
         if (isPasswordValid) {
 
-            const token = user.getJWT()
+            const token = await user.getJWT();
             res.cookie('token', token);
 
             res.send("Login Successfull");
@@ -42,6 +41,12 @@ router.post("/login", userAuth, async (req, res) => {
     catch (err) {
         res.status(400).send("ERROR " + err.message);
     }
+})
+
+router.post("/logout", (req, res) => {
+    res.cookie("token", null, {
+        expires: new Date(Date.now())
+    }).send("Logout Successfull!!")
 })
 
 module.exports = router;
