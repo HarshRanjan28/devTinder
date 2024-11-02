@@ -41,7 +41,7 @@ router.post("/request/send/:status/:toUserId", userAuth, async (req, res) => {
             throw new Error("Not a valid Status");
         }
 
-        const toUser = await User.findById(toUserId);
+        const toUser = await User.findById(toUserId); // checking only if we send request to the other person if he/she exist in our database
         if (!toUser) {
             throw new Error("User not found");
         }
@@ -68,5 +68,33 @@ router.post("/request/send/:status/:toUserId", userAuth, async (req, res) => {
         res.status(400).send("ERROR " + err.message);
     }
 });
+
+router.post("/request/review/:status/:requestId", userAuth, async (req, res) => {
+    try {
+        const loggedInUser = req.user;
+        const {status, requestId} = req.params;
+
+        const allowedStatus = ["accepted", "rejected"];
+
+        if (!allowedStatus.includes(status)) {
+            throw new Error("Not a valid Status");
+        }
+        const connectionRequest = await ConnectionRequest.findOne({
+            _id: requestId,
+            toUserId: loggedInUser._id,
+            status: "interested"
+        });
+        if (!connectionRequest) {
+            return res.status(404).json({message: "Connection request not found"})
+        }
+        connectionRequest.status = status;
+        const data = await connectionRequest.save();
+
+        res.json({message: "Connection Request " + status, data})
+    }
+    catch (err) {
+        res.status(400).send("ERROR " + err.message);
+    }
+})
 
 module.exports = router;
